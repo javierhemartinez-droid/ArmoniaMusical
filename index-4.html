@@ -1,0 +1,1375 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+  <link rel="manifest" href="manifest.json"/>
+  <meta name="theme-color" content="#0a0a0d"/>
+  <meta name="mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+  <meta name="apple-mobile-web-app-title" content="Armonía"/>
+  <link rel="apple-touch-icon" href="icons/icon-180.png"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Armonía · Compass Composer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Lato:wght@300;400;700&display=swap" rel="stylesheet" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: #0f0f12;
+    color: #e8e4d9;
+    font-family: 'Lato', sans-serif;
+    min-height: 100vh;
+    padding: 24px 16px;
+  }
+
+  ::-webkit-scrollbar { height: 4px; width: 4px; background: #1a1a1f; }
+  ::-webkit-scrollbar-thumb { background: #444; border-radius: 4px; }
+
+  button { cursor: pointer; font-family: 'Lato', sans-serif; transition: filter 0.15s; }
+  button:hover { filter: brightness(1.18); }
+
+  .serif { font-family: 'Playfair Display', serif; }
+
+  .container { max-width: 900px; margin: 0 auto; }
+
+  .header { text-align: center; margin-bottom: 28px; }
+  .header .sub { font-size: 11px; letter-spacing: 4px; color: #888; text-transform: uppercase; margin-bottom: 4px; }
+  .header h1 { font-family: 'Playfair Display', serif; font-size: 32px; font-weight: 400; color: #e8e4d9; }
+
+  .card {
+    background: #1a1a1f;
+    border-radius: 12px;
+    padding: 14px 18px;
+    margin-bottom: 16px;
+  }
+  .card-label {
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: #666;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+
+  .controls-row {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-bottom: 16px;
+  }
+
+  /* Tonic grid */
+  .tonic-grid {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 6px;
+  }
+  .tonic-btn {
+    background: #2a2a30;
+    border: none;
+    border-radius: 6px;
+    padding: 6px 4px;
+    color: #ccc;
+    font-size: 11px;
+  }
+  .tonic-btn.active { color: #111; font-weight: 700; }
+
+  /* ── Mode dropdown ── */
+  .mode-dropdown-wrap {
+    position: relative;
+    min-width: 220px;
+  }
+  .mode-trigger {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    background: #2a2a30;
+    border: 1.5px solid #3a3a42;
+    border-radius: 8px;
+    padding: 9px 14px;
+    color: #e8e4d9;
+    font-size: 13px;
+    font-weight: 600;
+    width: 100%;
+    cursor: pointer;
+    transition: border-color 0.15s;
+  }
+  .mode-trigger:hover { border-color: #666; filter: none; }
+  .mode-trigger .mode-trigger-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .mode-trigger .mode-trigger-label { flex: 1; text-align: left; }
+  .mode-trigger .mode-trigger-arrow {
+    font-size: 10px; color: #888;
+    transition: transform 0.2s;
+    flex-shrink: 0;
+  }
+  .mode-trigger.open .mode-trigger-arrow { transform: rotate(180deg); }
+
+  .mode-dropdown {
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0; right: 0;
+    background: #1e1e25;
+    border: 1.5px solid #3a3a42;
+    border-radius: 10px;
+    padding: 8px 6px;
+    z-index: 100;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+    display: none;
+    max-height: 380px;
+    overflow-y: auto;
+    min-width: 260px;
+  }
+  .mode-dropdown.open { display: block; }
+  .mode-group-label {
+    font-size: 9px;
+    letter-spacing: 2px;
+    color: #555;
+    text-transform: uppercase;
+    padding: 6px 8px 3px;
+  }
+  .mode-option {
+    display: flex;
+    align-items: flex-start;
+    gap: 9px;
+    background: transparent;
+    border: none;
+    border-radius: 7px;
+    padding: 8px 10px;
+    width: 100%;
+    text-align: left;
+    cursor: pointer;
+    transition: background 0.12s;
+  }
+  .mode-option:hover { background: #2a2a34; filter: none; }
+  .mode-option.active { background: #2a2a34; }
+  .mode-option-dot {
+    width: 9px; height: 9px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    margin-top: 3px;
+  }
+  .mode-option-text { flex: 1; }
+  .mode-option-name {
+    font-size: 12px;
+    font-weight: 600;
+    color: #e8e4d9;
+    line-height: 1.3;
+  }
+  .mode-option.active .mode-option-name { color: #fff; }
+  .mode-option-desc {
+    font-size: 10px;
+    color: #666;
+    margin-top: 2px;
+    line-height: 1.4;
+  }
+  .mode-option-check {
+    font-size: 12px;
+    color: #aaa;
+    flex-shrink: 0;
+    margin-top: 1px;
+    opacity: 0;
+  }
+  .mode-option.active .mode-option-check { opacity: 1; }
+
+  /* ── Instrument selector ── */
+  .instrument-bar {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-wrap: wrap;
+    margin-bottom: 10px;
+  }
+  .instrument-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: #2a2a30;
+    border: 1.5px solid transparent;
+    border-radius: 8px;
+    padding: 7px 14px;
+    color: #aaa;
+    font-size: 12px;
+    font-weight: 600;
+    transition: all 0.15s;
+  }
+  .instrument-btn.active {
+    color: #111;
+    font-weight: 700;
+    border-color: transparent;
+  }
+  .instrument-btn svg { opacity: 0.7; }
+  .instrument-btn.active svg { opacity: 1; }
+
+  /* Tuning selector */
+  .tuning-bar {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-top: 8px;
+  }
+  .tuning-btn {
+    background: #222228;
+    border: 1px solid #333;
+    border-radius: 6px;
+    padding: 4px 10px;
+    color: #888;
+    font-size: 11px;
+    transition: all 0.15s;
+  }
+  .tuning-btn.active {
+    border-color: #666;
+    color: #ddd;
+    background: #2e2e38;
+  }
+
+  /* Fretboard */
+  .fretboard-wrap { overflow-x: auto; padding: 8px 0; }
+  .fretboard-wrap svg { display: block; margin: 0 auto; }
+  .fret-note { cursor: pointer; }
+
+  /* Keyboard */
+  .keyboard-wrap {
+    overflow-x: auto;
+    padding: 10px 0 4px;
+    display: flex;
+    justify-content: center;
+  }
+  .keyboard-svg { display: block; }
+
+  .legend {
+    display: flex;
+    gap: 16px;
+    justify-content: center;
+    margin-top: 8px;
+    flex-wrap: wrap;
+  }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 11px;
+    color: #aaa;
+  }
+  .legend-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  /* Scale degrees */
+  .scale-row { display: flex; gap: 8px; flex-wrap: wrap; }
+  .chord-pill {
+    border-radius: 8px;
+    padding: 8px 14px;
+    border-width: 1.5px;
+    border-style: solid;
+    outline: none;
+    min-width: 70px;
+    background: transparent;
+  }
+  .chord-pill .pill-name { font-size: 18px; font-weight: 700; font-family: 'Playfair Display', serif; }
+  .chord-pill .pill-func { font-size: 10px; margin-top: 2px; }
+
+  /* Panels */
+  .panels { display: flex; gap: 14px; flex-wrap: wrap; margin-bottom: 16px; }
+  .panel-chord { flex: 1; min-width: 180px; }
+  .panel-suggestions { flex: 2; min-width: 220px; }
+
+  .chord-name-display { font-size: 24px; font-family: 'Playfair Display', serif; margin-bottom: 8px; }
+  .chord-notes-row { display: flex; gap: 8px; flex-wrap: wrap; }
+  .chord-note-box {
+    background: #2a2a30;
+    border-radius: 6px;
+    padding: 6px 10px;
+    font-size: 12px;
+  }
+  .chord-note-box .note-interval { font-size: 9px; color: #666; margin-top: 2px; }
+  .chord-function-label { margin-top: 10px; font-size: 11px; }
+  .add-btn {
+    margin-top: 12px;
+    border: none;
+    border-radius: 8px;
+    padding: 8px 16px;
+    color: #111;
+    font-weight: 700;
+    font-size: 12px;
+  }
+
+  /* Suggestions */
+  .suggestion {
+    background: #2a2a30;
+    border-radius: 8px;
+    padding: 10px 14px;
+    margin-bottom: 8px;
+    cursor: pointer;
+    border: 1px solid #333;
+    transition: border-color 0.15s;
+  }
+  .suggestion:hover { border-color: #666; }
+  .sug-label { font-size: 13px; color: #e8e4d9; font-weight: 600; font-family: 'Playfair Display', serif; margin-bottom: 3px; }
+  .sug-desc { font-size: 11px; color: #888; }
+  .sug-chords { display: flex; gap: 6px; margin-top: 6px; flex-wrap: wrap; }
+  .sug-chip {
+    border-radius: 4px;
+    padding: 2px 7px;
+    font-size: 10px;
+    border-width: 1px;
+    border-style: solid;
+  }
+
+  /* Progression */
+  .prog-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+  .clear-btn {
+    background: transparent;
+    border: 1px solid #444;
+    border-radius: 6px;
+    padding: 4px 10px;
+    color: #888;
+    font-size: 11px;
+  }
+  .prog-empty { color: #555; font-size: 12px; font-style: italic; }
+  .prog-row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  .prog-chord-item { display: flex; align-items: center; gap: 6px; }
+  .prog-chord-box {
+    border-radius: 8px;
+    padding: 8px 12px;
+    text-align: center;
+    border-width: 1.5px;
+    border-style: solid;
+  }
+  .prog-chord-name { font-size: 16px; font-family: 'Playfair Display', serif; }
+  .prog-chord-func { font-size: 9px; color: #666; margin-top: 1px; }
+  .prog-arrow { color: #444; font-size: 16px; }
+
+  /* Export */
+  .export-bar { display: flex; gap: 10px; justify-content: flex-end; flex-wrap: wrap; margin-bottom: 16px; }
+  /* ── Install PWA button ── */
+  .install-btn {
+    display: none;
+    align-items: center;
+    gap: 7px;
+    background: #e8b86d;
+    border: none;
+    border-radius: 8px;
+    padding: 8px 16px;
+    color: #111;
+    font-weight: 700;
+    font-size: 12px;
+    margin-top: 10px;
+    cursor: pointer;
+    transition: filter 0.15s;
+  }
+  .install-btn.visible { display: inline-flex; }
+  .install-btn:hover { filter: brightness(1.1); }
+
+  /* ── Export buttons ── */
+  .export-btn {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    border: 1.5px solid #444;
+    border-radius: 8px;
+    padding: 8px 16px;
+    font-size: 12px;
+    font-weight: 600;
+    background: transparent;
+    color: #ccc;
+    transition: border-color 0.15s, color 0.15s, background 0.15s;
+  }
+  .export-btn:hover { border-color: #aaa; color: #fff; background: #1e1e24; filter: none; }
+  .export-btn svg { flex-shrink: 0; }
+  .export-btn.copied { border-color: #6dbfa0; color: #6dbfa0; }
+
+  /* Tab */
+  .tab-section { margin-top: 16px; }
+  .tab-wrap { overflow-x: auto; padding: 8px 0; }
+  .tab-pre {
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 13px;
+    line-height: 1.9;
+    color: #c8c4b8;
+    background: #111115;
+    border-radius: 8px;
+    padding: 16px 18px;
+    white-space: pre;
+    display: inline-block;
+    min-width: 100%;
+  }
+  .tab-pre .tab-string-name { color: #666; }
+  .tab-pre .tab-chord-name  { color: #888; font-size: 11px; }
+  .tab-empty { color: #555; font-size: 12px; font-style: italic; margin-top: 8px; }
+
+  @media print {
+    body { background: #fff; color: #111; padding: 20px; }
+    .no-print { display: none !important; }
+    .card { background: #f5f5f5; border: 1px solid #ddd; page-break-inside: avoid; }
+    .card-label { color: #555; }
+    .print-only { display: block !important; }
+    .prog-chord-box { background: #f0f0f0 !important; }
+    .prog-chord-name { color: #333 !important; }
+    .prog-chord-func { color: #666 !important; }
+    .prog-arrow { color: #999 !important; }
+    .header .sub { color: #888; }
+    .header h1 { color: #111; }
+    .tab-pre { background: #f5f5f5; color: #111; border: 1px solid #ccc; }
+  }
+  .print-only { display: none; }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <div class="sub">Herramienta de armonía funcional</div>
+    <h1 class="serif">Armonía</h1>
+    <a href="explorador.html" style="display:inline-flex;align-items:center;gap:6px;background:#1e1e25;border:1px solid #2a2a35;border-radius:8px;padding:6px 14px;font-size:12px;color:#888;text-decoration:none;margin-top:10px">
+      🧭 <span>Ir al Explorador · <strong style="color:#ccc">Explorador</strong></span>
+    </a>
+    <br>
+    <button class="install-btn" id="install-btn" onclick="installApp()">
+      ⬇️ Instalar app
+    </button>
+  </div>
+
+  <!-- Controls -->
+  <div class="controls-row">
+    <div class="card" style="flex:0 0 auto">
+      <div class="card-label">Tónica</div>
+      <div class="tonic-grid" id="tonic-grid"></div>
+    </div>
+    <div class="card" style="flex:0 0 auto">
+      <div class="card-label">Modo / Escala</div>
+      <div class="mode-dropdown-wrap" id="mode-dropdown-wrap">
+        <button class="mode-trigger" id="mode-trigger" onclick="toggleModeDropdown()">
+          <span class="mode-trigger-dot" id="mode-trigger-dot"></span>
+          <span class="mode-trigger-label" id="mode-trigger-label">Jónico (Mayor)</span>
+          <span class="mode-trigger-arrow">▼</span>
+        </button>
+        <div class="mode-dropdown" id="mode-dropdown"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Instrument + Fretboard/Keyboard -->
+  <div class="card">
+    <div class="instrument-bar" id="instrument-bar"></div>
+    <div class="tuning-bar" id="tuning-bar"></div>
+    <div id="viz-area"></div>
+    <div class="legend" id="fret-legend"></div>
+  </div>
+
+  <!-- Scale degrees -->
+  <div class="card">
+    <div class="card-label">Acordes de la escala · seleccioná uno</div>
+    <div class="scale-row" id="scale-row"></div>
+  </div>
+
+  <!-- Panels -->
+  <div class="panels">
+    <div class="card panel-chord" id="panel-chord"></div>
+    <div class="card panel-suggestions" id="panel-suggestions"></div>
+  </div>
+
+  <!-- Export bar -->
+  <div class="export-bar no-print">
+    <button class="export-btn" id="btn-copy" onclick="copyCifrado()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+      </svg>
+      Copiar cifrado
+    </button>
+    <button class="export-btn" onclick="exportPDF()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/>
+      </svg>
+      Descargar PDF
+    </button>
+  </div>
+
+  <!-- Progression -->
+  <div class="card" id="panel-progression"></div>
+
+  <!-- Tablatura -->
+  <div class="card tab-section" id="panel-tab">
+    <div class="card-label">Tablatura</div>
+    <div class="tab-empty">Armá una progresión para ver la tablatura...</div>
+  </div>
+</div>
+
+<script>
+// ── Music Theory ──────────────────────────────────────────────────────────────
+const NOTES       = ["C","C#","D","D#","E","F","F#","G","G#","A","A#","B"];
+const NOTE_LABELS = ["Do","Do#","Re","Mib","Mi","Fa","Fa#","Sol","Lab","La","Sib","Si"];
+
+const MODES = {
+  // ── Modos mayores ────────────────────────────────────────────────────────
+  mayor:          { label:"Jónico (Mayor)",   group:"Mayor",  intervals:[0,2,4,5,7,9,11], chordTypes:["M","m","m","M","M","m","dim"], functions:["T","SD","T","SD","D","T","D"],   color:"#e8b86d",
+                    desc:"El modo mayor clásico. Base de la armonía tonal occidental." },
+  lidio:          { label:"Lidio",            group:"Mayor",  intervals:[0,2,4,6,7,9,11], chordTypes:["M","M","m","dim","M","m","m"], functions:["T","D","SD","D","T","SD","SD"],  color:"#f0d080",
+                    desc:"Mayor con 4° aumentada. Sonido brillante, etéreo, onírico." },
+  mixolidio:      { label:"Mixolidio",        group:"Mayor",  intervals:[0,2,4,5,7,9,10], chordTypes:["M","m","dim","M","m","m","M"], functions:["T","SD","D","SD","D","SD","T"],  color:"#d4a843",
+                    desc:"Mayor con 7° menor. Típico del blues, rock y música celta." },
+  // ── Modos menores ────────────────────────────────────────────────────────
+  dorico:         { label:"Dórico",           group:"Menor",  intervals:[0,2,3,5,7,9,10], chordTypes:["m","m","M","M","m","dim","M"], functions:["T","SD","T","SD","D","SD","T"],  color:"#6dbfa0",
+                    desc:"Menor con 6° mayor. Oscuro pero con un giro luminoso. Muy usado en jazz y rock." },
+  frigio:         { label:"Frigio",           group:"Menor",  intervals:[0,1,3,5,7,8,10], chordTypes:["m","M","M","m","dim","M","m"], functions:["T","SD","T","SD","D","SD","T"],  color:"#e07b7b",
+                    desc:"Menor con 2° menor. Sonido español/flamenco, tenso e intenso." },
+  eolico:         { label:"Eólico (M. Nat.)", group:"Menor",  intervals:[0,2,3,5,7,8,10], chordTypes:["m","dim","M","m","m","M","M"], functions:["T","SD","T","SD","D","SD","D"],  color:"#7eb8d4",
+                    desc:"El modo menor natural. Melancólico y expresivo." },
+  locrio:         { label:"Locrio",           group:"Menor",  intervals:[0,1,3,5,6,8,10], chordTypes:["dim","M","m","m","M","M","m"], functions:["T","SD","SD","SD","D","D","SD"], color:"#b07ab8",
+                    desc:"El modo más disonante. Tónica disminuida, rara vez usada como centro tonal." },
+  // ── Modo menor armónico (no griego pero esencial) ────────────────────────
+  menor_armonico:   { label:"Menor Armónico",      group:"Menor",          intervals:[0,2,3,5,7,8,11], chordTypes:["m","dim","M","m","M","M","dim"], functions:["T","SD","T","SD","D","SD","D"],  color:"#a78bca",
+                      desc:"Menor con 7° mayor. Genera la dominante con sensible, base de la armonía clásica." },
+  // ── Menor melódica y sus modos ───────────────────────────────────────────
+  menor_melodica:   { label:"Menor Melódica",       group:"Menor melódica", intervals:[0,2,3,5,7,9,11], chordTypes:["m","m","aug","M","M","dim","dim"], functions:["T","SD","T","SD","D","D","D"],  color:"#5bbfd4",
+                      desc:"Menor con 6° y 7° mayores. Muy usada en jazz. Base de tensiones modernas." },
+  lidio_dom:        { label:"Lidio Dominante (IV)", group:"Menor melódica", intervals:[0,2,4,6,7,9,10], chordTypes:["M","m","dim","M","m","dim","M"],  functions:["D","SD","D","T","SD","D","T"],  color:"#3ea8c0",
+                      desc:"4° modo de la menor melódica. Mayor con #4 y b7. Dominante por excelencia en jazz." },
+  superlocrio:      { label:"Superlocrio (VII)",    group:"Menor melódica", intervals:[0,1,3,4,6,8,10], chordTypes:["dim","m","M","m","M","M","m"],    functions:["D","SD","T","SD","D","T","SD"], color:"#2d8fa8",
+                      desc:"7° modo de la menor melódica. Escala alterada. Dominante con todas las alteraciones posibles." },
+  lidio_aug:        { label:"Lidio Aumentado (III)",group:"Menor melódica", intervals:[0,2,4,6,8,9,11], chordTypes:["aug","M","M","m","dim","m","m"],  functions:["T","D","T","SD","D","SD","SD"], color:"#4dd4b0",
+                      desc:"3° modo de la menor melódica. Mayor con #4 y #5. Sonido flotante y ambiguo." },
+};
+
+const FUNC_LABELS = { T:"Tónica", SD:"Subdominante", D:"Dominante" };
+const FUNC_COLORS = { T:"#6dbfa0", SD:"#e8b86d", D:"#e07b7b" };
+
+const TRIAD = { M:[0,4,7], m:[0,3,7], dim:[0,3,6], aug:[0,4,8] };
+
+// ── Tuning definitions ────────────────────────────────────────────────────────
+// Note indices (C=0): E=4, A=9, D=2, G=7, B=11, e=4
+const TUNINGS = {
+  guitar: {
+    standard: { label:"Estándar (EADGBE)", strings:[4,11,7,2,9,4], names:["e","B","G","D","A","E"] },
+    dropD:    { label:"Drop D (DADGBE)",   strings:[4,11,7,2,9,2], names:["e","B","G","D","A","D"] },
+    openG:    { label:"Open G (DGDGBD)",   strings:[2,11,7,2,7,2], names:["D","B","G","D","G","D"] },
+    dadgad:   { label:"DADGAD",            strings:[2,9,7,2,9,2],  names:["D","A","G","D","A","D"] },
+  },
+  bass: {
+    standard4: { label:"4 cuerdas Estándar (EADG)", strings:[7,2,9,4], names:["G","D","A","E"] },
+    dropD4:    { label:"4 cuerdas Drop D (DADG)",   strings:[7,2,9,2], names:["G","D","A","D"] },
+    standard5: { label:"5 cuerdas Estándar (BEADG)",strings:[7,2,9,4,11], names:["G","D","A","E","B"] },
+  },
+};
+
+const FRETS = 13;
+
+function getNote(root, s)    { return NOTES[(NOTES.indexOf(root)+s)%12]; }
+function getScale(root, mode){ return MODES[mode].intervals.map(i=>getNote(root,i)); }
+function buildChord(root,t)  { return TRIAD[t].map(i=>getNote(root,i)); }
+function chordLabel(root,type){
+  const suffix = type==="m" ? "m" : type==="dim" ? "°" : type==="aug" ? "+" : "";
+  return NOTE_LABELS[NOTES.indexOf(root)] + suffix;
+}
+
+function getSuggestions(degIdx, mode) {
+  const fn = MODES[mode].functions[degIdx];
+
+  // Sugerencias específicas para modos de la menor melódica
+  if(mode === "menor_melodica") {
+    return [
+      { degrees:[3,4], label:"Im — IV — V",   desc:"Progresión menor melódica clásica" },
+      { degrees:[4,0], label:"Im — V — Im",   desc:"Cadencia jazz menor" },
+      { degrees:[1,4,0], label:"IIm — V — Im", desc:"2-5-1 menor (jazz)" },
+    ];
+  }
+  if(mode === "lidio_dom") {
+    return [
+      { degrees:[0], label:"Resolución tónica", desc:"Dominante resolviendo a Im (jazz)" },
+      { degrees:[4,0], label:"V — I — V", desc:"Dominante prolongada" },
+      { degrees:[3,0], label:"IV — I — V", desc:"Movimiento subdominante-tónica" },
+    ];
+  }
+  if(mode === "superlocrio") {
+    return [
+      { degrees:[0,6], label:"Superlocrio alterado", desc:"Acorde alterado resolviendo" },
+      { degrees:[2,0], label:"bIII — bVII — I", desc:"Movimiento modal descendente" },
+      { degrees:[4,0], label:"V alt — Im", desc:"Dominante alterada a menor" },
+    ];
+  }
+  if(mode === "lidio_aug") {
+    return [
+      { degrees:[1,3], label:"I+ — II — IV", desc:"Movimiento cromático ascendente" },
+      { degrees:[4,0], label:"I+ — V — I+", desc:"Tensión simétrica" },
+      { degrees:[2,0], label:"I+ — III — I+", desc:"Ambigüedad tonal característica" },
+    ];
+  }
+
+  return ({
+    T:  [{ degrees:[3,4], label:"T → SD → D",    desc:"Movimiento cadencial clásico" },
+         { degrees:[5,4], label:"T → T → D",      desc:"Refuerzo tónico" },
+         { degrees:[1,4], label:"T → SD → D",     desc:"Subdominante menor" }],
+    SD: [{ degrees:[4],   label:"SD → D",         desc:"Resolución dominante" },
+         { degrees:[0],   label:"SD → T",         desc:"Cadencia plagal" },
+         { degrees:[4,0], label:"SD → D → T",     desc:"Cadencia perfecta" }],
+    D:  [{ degrees:[0],   label:"D → T",          desc:"Resolución tónica (cadencia auténtica)" },
+         { degrees:[5],   label:"D → T relativa", desc:"Resolución engañosa" },
+         { degrees:[3,0], label:"D → SD → T",     desc:"Cadencia con retardo" }],
+  })[fn] || [];
+}
+
+// ── State ─────────────────────────────────────────────────────────────────────
+let state = {
+  root: "C",
+  mode: "mayor",
+  selectedDegree: 0,
+  progression: [],
+  instrument: "guitar",   // guitar | bass | keyboard
+  tuningKey: "standard",  // key within TUNINGS[instrument]
+};
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+function hex(color, alpha) {
+  const a = Math.round(alpha*255).toString(16).padStart(2,"0");
+  return color + a;
+}
+
+// ── Render: Tonic & Mode ──────────────────────────────────────────────────────
+function renderTonicGrid() {
+  const g = document.getElementById("tonic-grid");
+  const mColor = MODES[state.mode].color;
+  g.innerHTML = NOTES.map((n,i)=>`
+    <button class="tonic-btn${state.root===n?" active":""}"
+      style="${state.root===n?`background:${mColor}`:"background:#2a2a30"}"
+      onclick="selectRoot('${n}')">${NOTE_LABELS[i]}</button>
+  `).join("");
+}
+
+function renderModeDropdown() {
+  // Update trigger button
+  const mD = MODES[state.mode];
+  document.getElementById("mode-trigger-dot").style.background   = mD.color;
+  document.getElementById("mode-trigger-label").textContent      = mD.label;
+  document.getElementById("mode-trigger").style.borderColor      = mD.color + "88";
+
+  // Build dropdown list grouped
+  const groups = {};
+  Object.entries(MODES).forEach(([key, m]) => {
+    const g = m.group || "Otro";
+    if(!groups[g]) groups[g] = [];
+    groups[g].push([key, m]);
+  });
+
+  let html = "";
+  Object.entries(groups).forEach(([groupName, entries]) => {
+    html += `<div class="mode-group-label">${groupName}</div>`;
+    entries.forEach(([key, m]) => {
+      const active = state.mode === key;
+      html += `
+        <button class="mode-option${active?" active":""}" onclick="selectMode('${key}')">
+          <span class="mode-option-dot" style="background:${m.color}"></span>
+          <span class="mode-option-text">
+            <span class="mode-option-name">${m.label}</span>
+            ${m.desc ? `<span class="mode-option-desc">${m.desc}</span>` : ""}
+          </span>
+          <span class="mode-option-check">✓</span>
+        </button>`;
+    });
+  });
+  document.getElementById("mode-dropdown").innerHTML = html;
+}
+
+function toggleModeDropdown() {
+  const dd  = document.getElementById("mode-dropdown");
+  const btn = document.getElementById("mode-trigger");
+  const open = dd.classList.toggle("open");
+  btn.classList.toggle("open", open);
+}
+
+function closeModeDropdown() {
+  document.getElementById("mode-dropdown").classList.remove("open");
+  document.getElementById("mode-trigger").classList.remove("open");
+}
+
+// Close dropdown when clicking outside
+document.addEventListener("click", e => {
+  if(!document.getElementById("mode-dropdown-wrap").contains(e.target)) closeModeDropdown();
+});
+
+// ── Render: Instrument bar ────────────────────────────────────────────────────
+const INSTRUMENT_ICONS = {
+  guitar: `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3H5a2 2 0 0 0-2 2v4m0 0h18M3 9v10a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V9"/></svg>`,
+  bass:   `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><line x1="2" y1="9" x2="22" y2="9"/><line x1="2" y1="14" x2="22" y2="14"/></svg>`,
+  keyboard: `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"/><line x1="6" y1="6" x2="6" y2="13"/><line x1="10" y1="6" x2="10" y2="13"/><line x1="14" y1="6" x2="14" y2="13"/><line x1="18" y1="6" x2="18" y2="13"/></svg>`,
+};
+
+function renderInstrumentBar() {
+  const el = document.getElementById("instrument-bar");
+  const mColor = MODES[state.mode].color;
+  const instruments = [
+    { key:"guitar",   label:"Guitarra" },
+    { key:"bass",     label:"Bajo" },
+    { key:"keyboard", label:"Teclado" },
+  ];
+  el.innerHTML = `<div class="card-label" style="margin:0;margin-right:4px">Instrumento</div>` +
+    instruments.map(({key,label})=>`
+      <button class="instrument-btn${state.instrument===key?" active":""}"
+        style="${state.instrument===key?`background:${mColor}`:"background:#2a2a30"}"
+        onclick="selectInstrument('${key}')">
+        ${INSTRUMENT_ICONS[key]} ${label}
+      </button>
+    `).join("");
+}
+
+function renderTuningBar() {
+  const el = document.getElementById("tuning-bar");
+  if(state.instrument === "keyboard") { el.innerHTML=""; return; }
+  const tunings = TUNINGS[state.instrument];
+  el.innerHTML = Object.entries(tunings).map(([key,t])=>`
+    <button class="tuning-btn${state.tuningKey===key?" active":""}"
+      onclick="selectTuning('${key}')">${t.label}</button>
+  `).join("");
+}
+
+// ── Render: Fretboard (guitar & bass) ─────────────────────────────────────────
+function renderFretboard() {
+  const tuning = TUNINGS[state.instrument][state.tuningKey];
+  const strings = tuning.strings;
+  const names   = tuning.names;
+  const nStr    = strings.length;
+  const strSpacing = 22;
+  const svgH    = 30 + (nStr-1)*strSpacing + 30; // top padding + strings + bottom
+  const W       = FRETS*44+60;
+
+  const svg = document.getElementById("fretboard");
+  if(!svg) return;
+  svg.setAttribute("width", W);
+  svg.setAttribute("height", svgH);
+
+  const scale = getScale(state.root, state.mode);
+  const mData = MODES[state.mode];
+  let html = "";
+
+  // String name labels (outside nut)
+  names.forEach((name, si) => {
+    const cy = 30 + si*strSpacing;
+    html += `<text x="10" y="${cy+4}" text-anchor="middle" font-size="9" fill="#555" font-family="Lato,sans-serif">${name}</text>`;
+  });
+
+  // Nut
+  html += `<rect x="40" y="20" width="4" height="${(nStr-1)*strSpacing+20}" fill="#c8a97e" rx="2"/>`;
+
+  // Strings
+  strings.forEach((_,si)=>{
+    const sw = si >= nStr-2 ? 2 : 1.2;
+    html += `<line x1="40" y1="${30+si*strSpacing}" x2="${40+FRETS*44}" y2="${30+si*strSpacing}" stroke="#888" stroke-width="${sw}"/>`;
+  });
+
+  // Fret lines
+  for(let fi=1;fi<=FRETS;fi++){
+    html += `<line x1="${40+fi*44}" y1="20" x2="${40+fi*44}" y2="${20+(nStr-1)*strSpacing+20}" stroke="#444" stroke-width="1"/>`;
+  }
+
+  // Fret markers
+  [3,5,7,9,12].forEach(f=>{
+    html += `<circle cx="${40+(f-0.5)*44}" cy="${20+(nStr-1)*strSpacing+20+8}" r="4" fill="#555"/>`;
+  });
+
+  // Notes
+  strings.forEach((openNote,si)=>{
+    for(let fi=0;fi<=FRETS;fi++){
+      const noteIdx = (openNote+fi)%12;
+      const note    = NOTES[noteIdx];
+      const degIdx  = scale.indexOf(note);
+      const inScale = degIdx!==-1;
+      const isRoot  = note===state.root;
+      const fn      = inScale ? mData.functions[degIdx] : null;
+      const cx      = fi===0 ? 20 : 40+(fi-0.5)*44;
+      const cy      = 30+si*strSpacing;
+      const fill    = isRoot ? mData.color : inScale ? hex(FUNC_COLORS[fn],0.8) : "transparent";
+      const stroke  = isRoot ? "#fff" : "transparent";
+      const fw      = isRoot ? "bold" : "normal";
+      const fs      = inScale ? 8 : 7;
+      const tc      = inScale ? "#111" : "#444";
+
+      if(inScale){
+        html += `<circle cx="${cx}" cy="${cy}" r="10" fill="${fill}" stroke="${stroke}" stroke-width="2" class="fret-note" onclick="selectRoot('${note}')" style="cursor:pointer"/>`;
+      }
+      html += `<text x="${cx}" y="${cy+4}" text-anchor="middle" font-size="${fs}" fill="${tc}" font-weight="${fw}" font-family="Lato,sans-serif" style="pointer-events:none;user-select:none">${NOTE_LABELS[noteIdx]}</text>`;
+    }
+  });
+
+  svg.innerHTML = html;
+}
+
+// ── Render: Keyboard ──────────────────────────────────────────────────────────
+// Two octaves C3–B4 (24 semitones, 14 white keys + 10 black keys per octave = 28 white total)
+const WHITE_KEYS = [0,2,4,5,7,9,11]; // semitone offsets within octave that are white
+const BLACK_KEYS = [1,3,6,8,10];     // semitone offsets that are black
+// White key positions within an octave (7 per octave)
+const WHITE_KEY_OCTAVE_POS = [0,1,2,3,4,5,6]; // just index
+// Map semitone → white key index within octave
+const SEMI_TO_WHITE = {0:0,2:1,4:2,5:3,7:4,9:5,11:6};
+
+function renderKeyboard() {
+  const vizEl = document.getElementById("viz-area");
+  const scale = getScale(state.root, state.mode);
+  const mData = MODES[state.mode];
+
+  // Get current chord notes
+  const sc   = getScale(state.root, state.mode);
+  const mD   = MODES[state.mode];
+  const sR   = sc[state.selectedDegree];
+  const sT   = mD.chordTypes[state.selectedDegree];
+  const chordNotes = buildChord(sR, sT);
+
+  const OCTAVES = 2;
+  const WW = 28; // white key width
+  const WH = 90; // white key height
+  const BW = 18; // black key width
+  const BH = 56; // black key height
+  const totalWhite = 7 * OCTAVES;
+  const svgW = totalWhite * WW + 2;
+  const svgH = WH + 24;
+
+  let html = "";
+
+  // Draw white keys first
+  for(let oct=0; oct<OCTAVES; oct++){
+    WHITE_KEYS.forEach((semi, wi)=>{
+      const noteIdx  = (semi) % 12;
+      const note     = NOTES[noteIdx];
+      const absNote  = NOTES[noteIdx];
+      const inScale  = scale.indexOf(absNote) !== -1;
+      const isRoot   = absNote === state.root;
+      const inChord  = chordNotes.includes(absNote);
+      const fn       = inScale ? mData.functions[scale.indexOf(absNote)] : null;
+      const x        = (oct*7 + wi)*WW + 1;
+      const fill     = isRoot ? mData.color
+                     : inChord ? hex(FUNC_COLORS[fn] || "#6dbfa0", 0.85)
+                     : inScale ? hex(FUNC_COLORS[fn] || "#6dbfa0", 0.25)
+                     : "#e8e4d9";
+      const stroke   = inScale ? "#777" : "#999";
+      const textCol  = inChord || isRoot ? "#111" : inScale ? "#333" : "#aaa";
+      html += `<rect x="${x}" y="1" width="${WW-1}" height="${WH-1}" rx="3" fill="${fill}" stroke="${stroke}" stroke-width="0.8" style="cursor:pointer" onclick="selectRoot('${absNote}')"/>`;
+      if(inScale){
+        html += `<text x="${x+WW/2}" y="${WH-8}" text-anchor="middle" font-size="7.5" fill="${textCol}" font-weight="${isRoot||inChord?"bold":"normal"}" font-family="Lato,sans-serif" style="pointer-events:none;user-select:none">${NOTE_LABELS[noteIdx]}</text>`;
+      }
+    });
+  }
+
+  // Draw black keys on top
+  // Black key positions per octave (gap from left of octave in white-key units):
+  // C# after C(0) → x offset = 0.6*WW
+  // D# after D(1) → x offset = 1.6*WW
+  // F# after F(3) → x offset = 3.6*WW
+  // G# after G(4) → x offset = 4.6*WW
+  // A# after A(5) → x offset = 5.6*WW
+  const BLACK_OFFSETS = [0.65, 1.65, 3.65, 4.65, 5.65]; // in white-key units from octave start
+
+  for(let oct=0; oct<OCTAVES; oct++){
+    BLACK_KEYS.forEach((semi, bi)=>{
+      const noteIdx  = semi % 12;
+      const note     = NOTES[noteIdx];
+      const inScale  = scale.indexOf(note) !== -1;
+      const isRoot   = note === state.root;
+      const inChord  = chordNotes.includes(note);
+      const fn       = inScale ? mData.functions[scale.indexOf(note)] : null;
+      const x        = (oct*7 + BLACK_OFFSETS[bi])*WW + 1 - BW/2;
+      const fill     = isRoot ? mData.color
+                     : inChord ? hex(FUNC_COLORS[fn] || "#6dbfa0", 0.9)
+                     : inScale ? hex(FUNC_COLORS[fn] || "#6dbfa0", 0.5)
+                     : "#111115";
+      const stroke   = inScale ? "#666" : "#333";
+      html += `<rect x="${x}" y="1" width="${BW}" height="${BH}" rx="2" fill="${fill}" stroke="${stroke}" stroke-width="0.8" style="cursor:pointer" onclick="selectRoot('${note}')"/>`;
+      if(inScale){
+        const textCol = inChord || isRoot ? "#111" : "#ddd";
+        html += `<text x="${x+BW/2}" y="${BH-5}" text-anchor="middle" font-size="6.5" fill="${textCol}" font-weight="${isRoot||inChord?"bold":"normal"}" font-family="Lato,sans-serif" style="pointer-events:none;user-select:none">${NOTE_LABELS[noteIdx]}</text>`;
+      }
+    });
+  }
+
+  // Octave labels
+  for(let oct=0; oct<OCTAVES; oct++){
+    html += `<text x="${oct*7*WW + WW*3.5}" y="${WH+16}" text-anchor="middle" font-size="9" fill="#444" font-family="Lato,sans-serif">Oct ${oct+3}</text>`;
+  }
+
+  vizEl.innerHTML = `<div class="keyboard-wrap"><svg class="keyboard-svg" width="${svgW}" height="${svgH}">${html}</svg></div>`;
+}
+
+// ── Render: Viz area dispatcher ───────────────────────────────────────────────
+function renderViz() {
+  const vizEl  = document.getElementById("viz-area");
+  const legEl  = document.getElementById("fret-legend");
+  const mColor = MODES[state.mode].color;
+
+  if(state.instrument === "keyboard"){
+    // replace fretboard svg with keyboard
+    vizEl.innerHTML = ""; // will be filled by renderKeyboard
+    renderKeyboard();
+
+    // Legend: scale degrees
+    legEl.innerHTML = Object.entries(FUNC_COLORS).map(([fn,c])=>`
+      <div class="legend-item"><div class="legend-dot" style="background:${c}"></div>${FUNC_LABELS[fn]}</div>
+    `).join("") +
+    `<div class="legend-item"><div class="legend-dot" style="background:${mColor};border:2px solid #fff"></div>Tónica</div>` +
+    `<div class="legend-item"><div class="legend-dot" style="background:#444;border:2px solid #888"></div>Notas del acorde</div>`;
+
+    // Update card label
+    const lbl = document.querySelector(".card:nth-child(3) .instrument-bar");
+  } else {
+    // Fretboard
+    if(!document.getElementById("fretboard")){
+      vizEl.innerHTML = `<div class="fretboard-wrap"><svg id="fretboard" height="160"></svg></div>`;
+    }
+    renderFretboard();
+
+    legEl.innerHTML = Object.entries(FUNC_COLORS).map(([fn,c])=>`
+      <div class="legend-item"><div class="legend-dot" style="background:${c}"></div>${FUNC_LABELS[fn]}</div>
+    `).join("") + `<div class="legend-item"><div class="legend-dot" style="background:${mColor};border:2px solid #fff"></div>Tónica seleccionada</div>`;
+  }
+}
+
+// ── Render: Scale, Chord, Suggestions ────────────────────────────────────────
+function renderScaleRow() {
+  const el  = document.getElementById("scale-row");
+  const mD  = MODES[state.mode];
+  const sc  = getScale(state.root, state.mode);
+  el.innerHTML = sc.map((r,i)=>{
+    const t  = mD.chordTypes[i];
+    const fn = mD.functions[i];
+    const c  = FUNC_COLORS[fn];
+    const sel= state.selectedDegree===i;
+    const bg = sel ? c : hex(c,0.13);
+    const tc = sel ? "#111" : c;
+    return `<button class="chord-pill" style="border-color:${c};background:${bg}" onclick="selectDegree(${i})">
+      <div class="pill-name" style="color:${tc}">${chordLabel(r,t)}</div>
+      <div class="pill-func" style="color:${sel?"#333":c+"99"}">${FUNC_LABELS[fn]}</div>
+    </button>`;
+  }).join("");
+}
+
+function renderChordPanel() {
+  const el   = document.getElementById("panel-chord");
+  const mD   = MODES[state.mode];
+  const sc   = getScale(state.root, state.mode);
+  const sR   = sc[state.selectedDegree];
+  const sT   = mD.chordTypes[state.selectedDegree];
+  const sFn  = mD.functions[state.selectedDegree];
+  const notes= buildChord(sR, sT);
+  const intervals = ["Fundamental","Tercera","Quinta"];
+
+  el.innerHTML = `
+    <div class="card-label">Acorde seleccionado</div>
+    <div class="chord-name-display serif" style="color:${mD.color}">${chordLabel(sR,sT)}</div>
+    <div class="chord-notes-row">
+      ${notes.map((n,i)=>`
+        <div class="chord-note-box" style="color:${i===0?mD.color:"#ccc"};font-weight:${i===0?700:400}">
+          ${NOTE_LABELS[NOTES.indexOf(n)]}
+          <div class="note-interval">${intervals[i]}</div>
+        </div>
+      `).join("")}
+    </div>
+    <div class="chord-function-label" style="color:${FUNC_COLORS[sFn]}">Función: ${FUNC_LABELS[sFn]}</div>
+    <button class="add-btn" style="background:${mD.color}" onclick="addDegree(${state.selectedDegree})">+ Agregar a progresión</button>
+  `;
+}
+
+function renderSuggestions() {
+  const el  = document.getElementById("panel-suggestions");
+  const mD  = MODES[state.mode];
+  const sc  = getScale(state.root, state.mode);
+  const sug = getSuggestions(state.selectedDegree, state.mode);
+  const dIdx= state.selectedDegree;
+
+  const chips = (degs) => [dIdx,...degs].map(d=>{
+    const r=sc[d], t=mD.chordTypes[d], fn=mD.functions[d], c=FUNC_COLORS[fn];
+    return `<span class="sug-chip" style="color:${c};border-color:${c};background:${hex(c,0.2)}">${chordLabel(r,t)}</span>`;
+  }).join("");
+
+  el.innerHTML = `
+    <div class="card-label">Posibilidades armónicas</div>
+    ${sug.map((s,i)=>`
+      <div class="suggestion" onclick="addSuggestion(${i})">
+        <div class="sug-label">${s.label}</div>
+        <div class="sug-desc">${s.desc}</div>
+        <div class="sug-chords">${chips(s.degrees)}</div>
+      </div>
+    `).join("")}
+  `;
+}
+
+function renderProgression() {
+  const el  = document.getElementById("panel-progression");
+  const prog= state.progression;
+
+  const clearBtn = prog.length>0 ? `<button class="clear-btn" onclick="clearProg()">Limpiar</button>` : "";
+  let body = "";
+
+  if(prog.length===0){
+    body = `<div class="prog-empty">Seleccioná acordes o hacé click en una progresión sugerida para armarla acá...</div>`;
+  } else {
+    const items = prog.map((ch,i)=>{
+      const c = FUNC_COLORS[ch.func];
+      const arrow = i<prog.length-1 ? `<span class="prog-arrow">→</span>` : "";
+      return `<div class="prog-chord-item">
+        <div class="prog-chord-box" style="border-color:${c};background:${hex(c,0.13)}">
+          <div class="prog-chord-name serif" style="color:${c}">${chordLabel(ch.root,ch.type)}</div>
+          <div class="prog-chord-func">${FUNC_LABELS[ch.func]}</div>
+        </div>${arrow}
+      </div>`;
+    }).join("");
+    body = `<div class="prog-row">${items}</div>`;
+  }
+
+  el.innerHTML = `
+    <div class="prog-header">
+      <div class="card-label" style="margin:0">Progresión armada</div>
+      ${clearBtn}
+    </div>
+    ${body}
+  `;
+}
+
+// ── Render: Tab ───────────────────────────────────────────────────────────────
+// Voicings for guitar (standard): [e,B,G,D,A,E] high to low, -1=mute
+const VOICINGS_GUITAR = {
+  "C-M":[0,1,0,2,3,-1],"C#-M":[4,6,6,6,4,-1],"D-M":[2,3,2,0,-1,-1],
+  "D#-M":[3,4,3,1,-1,-1],"E-M":[0,0,1,2,2,0],"F-M":[1,1,2,3,3,1],
+  "F#-M":[2,2,3,4,4,2],"G-M":[3,0,0,0,2,3],"G#-M":[4,4,5,6,6,4],
+  "A-M":[0,2,2,2,0,-1],"A#-M":[1,3,3,3,1,-1],"B-M":[2,4,4,4,2,-1],
+  "C-m":[0,1,0,2,3,-1],"C#-m":[4,5,6,6,4,-1],"D-m":[1,3,2,0,-1,-1],
+  "D#-m":[2,4,3,1,-1,-1],"E-m":[0,0,0,2,2,0],"F-m":[1,1,1,3,3,1],
+  "F#-m":[2,2,2,4,4,2],"G-m":[3,3,3,5,5,3],"G#-m":[4,4,4,6,6,4],
+  "A-m":[0,1,2,2,0,-1],"A#-m":[1,2,3,3,1,-1],"B-m":[2,3,4,4,2,-1],
+  "C-dim":[-1,2,1,2,3,-1],"C#-dim":[-1,3,2,3,4,-1],"D-dim":[-1,1,2,1,0,-1],
+  "D#-dim":[-1,2,3,2,1,-1],"E-dim":[0,2,0,1,2,-1],"F-dim":[1,3,1,2,3,-1],
+  "F#-dim":[-1,0,2,0,2,-1],"G-dim":[-1,1,3,1,3,-1],"G#-dim":[-1,2,0,2,0,-1],
+  "A-dim":[-1,3,1,3,1,-1],"A#-dim":[-1,1,2,1,2,-1],"B-dim":[-1,2,0,2,0,-1],
+  // Aumentados
+  "C-aug":[-1,1,1,2,3,-1],"C#-aug":[-1,2,2,3,4,-1],"D-aug":[-1,3,3,4,5,-1],
+  "D#-aug":[0,0,1,1,2,-1],"E-aug":[1,1,2,2,3,0],"F-aug":[2,2,3,3,4,1],
+  "F#-aug":[3,3,4,4,5,2],"G-aug":[3,4,5,5,-1,3],"G#-aug":[4,5,6,6,-1,4],
+  "A-aug":[0,2,2,3,0,-1],"A#-aug":[1,3,3,4,1,-1],"B-aug":[2,4,4,5,2,-1],
+};
+
+// Bass voicings (root position, played on lowest available string)
+// For 4-string standard EADG (high to low in tab: G D A E)
+function buildBassTab(prog, tuning) {
+  if(prog.length === 0) return null;
+  const strings   = tuning.strings; // low to high for tab: reverse
+  const names     = tuning.names;
+  const nStr      = strings.length;
+  const SEP       = "---|";
+  const PAD       = 4;
+
+  // For each chord, find root note on each string (lowest fret position <= 5)
+  const voicings = prog.map(ch => {
+    // Try each string from lowest (last in array) to highest, find root
+    const result = new Array(nStr).fill(-1);
+    // Find one position per string where the root sits (if within 5 frets)
+    for(let si=0; si<nStr; si++){
+      const openNote = strings[si];
+      for(let fi=0; fi<=5; fi++){
+        if(NOTES[(openNote+fi)%12] === ch.root){
+          result[si] = fi;
+          break;
+        }
+      }
+    }
+    return result;
+  });
+
+  const labels = prog.map(ch => chordLabel(ch.root, ch.type));
+  const colWidths = voicings.map((v,ci) => {
+    const maxFret = Math.max(...v.map(f=>String(f===-1?"x":f).length));
+    return Math.max(maxFret, labels[ci].length) + PAD;
+  });
+
+  // Tab lines: high string first (reverse of strings array)
+  const lineNames = [...names].reverse();
+  const lines = lineNames.map((name, rsi) => {
+    const si = nStr-1-rsi; // index in strings array
+    let line = `${name} |`;
+    voicings.forEach((v,ci) => {
+      const fret = v[si];
+      const val  = fret===-1 ? "-" : String(fret);
+      const width= colWidths[ci];
+      const left = Math.floor((width-val.length)/2);
+      const right= width-val.length-left;
+      line += "-".repeat(left)+val+"-".repeat(right)+"|";
+    });
+    return line;
+  });
+
+  let header = "  ";
+  labels.forEach((lbl,ci)=>{
+    const width = colWidths[ci]+1;
+    const left  = Math.floor((width-lbl.length)/2);
+    const right = width-lbl.length-left;
+    header += " ".repeat(left)+lbl+" ".repeat(right);
+  });
+
+  const sepLine = "  "+lines[0].slice(2).replace(/[^|]/g,"-");
+  return [header, sepLine, ...lines, sepLine].join("\n");
+}
+
+function buildGuitarTab(prog, tuningKey) {
+  if(prog.length===0) return null;
+  // For non-standard tunings, fall back to standard voicings
+  // (full per-tuning voicing tables would be very large; standard is the reference)
+  const STRING_NAMES = ["e","B","G","D","A","E"];
+  const PAD = 4;
+
+  const voicings = prog.map(ch => {
+    const key = `${ch.root}-${ch.type}`;
+    return VOICINGS_GUITAR[key] || [0,0,0,0,0,0];
+  });
+  const labels = prog.map(ch=>chordLabel(ch.root,ch.type));
+  const colWidths = voicings.map((v,ci)=>{
+    const maxFret=Math.max(...v.map(f=>String(f===-1?"x":f).length));
+    return Math.max(maxFret,labels[ci].length)+PAD;
+  });
+
+  const lines = STRING_NAMES.map((name,si)=>{
+    let line=`${name} |`;
+    voicings.forEach((v,ci)=>{
+      const fret=v[si];
+      const val=fret===-1?"x":String(fret);
+      const width=colWidths[ci];
+      const left=Math.floor((width-val.length)/2);
+      const right=width-val.length-left;
+      line+="-".repeat(left)+val+"-".repeat(right)+"|";
+    });
+    return line;
+  });
+
+  let header="  ";
+  labels.forEach((lbl,ci)=>{
+    const width=colWidths[ci]+1;
+    const left=Math.floor((width-lbl.length)/2);
+    const right=width-lbl.length-left;
+    header+=" ".repeat(left)+lbl+" ".repeat(right);
+  });
+
+  const sepLine="  "+lines[0].slice(2).replace(/[^|]/g,"-");
+  return [header,sepLine,...lines,sepLine].join("\n");
+}
+
+function buildKeyboardTab(prog) {
+  if(prog.length===0) return null;
+  // Show chord notes as a text representation
+  const lines = prog.map((ch,i)=>{
+    const notes = buildChord(ch.root,ch.type).map(n=>NOTE_LABELS[NOTES.indexOf(n)]);
+    return `  ${chordLabel(ch.root,ch.type).padEnd(7)} →  ${notes.join("  -  ")}`;
+  });
+  const header = "  Acorde   →  Fundamental  Tercera  Quinta";
+  const sep    = "  " + "-".repeat(44);
+  return [header, sep, ...lines, sep].join("\n");
+}
+
+function buildTab() {
+  const prog = state.progression;
+  if(prog.length===0) return null;
+  if(state.instrument==="guitar") return buildGuitarTab(prog, state.tuningKey);
+  if(state.instrument==="bass")   return buildBassTab(prog, TUNINGS.bass[state.tuningKey]);
+  return buildKeyboardTab(prog);
+}
+
+function getTabLabel() {
+  if(state.instrument==="guitar")   return "Tablatura · Guitarra";
+  if(state.instrument==="bass")     return "Tablatura · Bajo";
+  return "Notas del acorde · Teclado";
+}
+
+function renderTab() {
+  const el   = document.getElementById("panel-tab");
+  const text = buildTab();
+
+  if(!text) {
+    el.innerHTML = `<div class="card-label">${getTabLabel()}</div><div class="tab-empty">Armá una progresión para ver la tablatura...</div>`;
+    return;
+  }
+
+  el.innerHTML = `
+    <div class="prog-header">
+      <div class="card-label" style="margin:0">${getTabLabel()}</div>
+      <button class="export-btn" id="btn-copy-tab" onclick="copyTab()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+        </svg>
+        Copiar TAB
+      </button>
+    </div>
+    <div class="tab-wrap"><pre class="tab-pre">${text}</pre></div>`;
+}
+
+// ── Actions ───────────────────────────────────────────────────────────────────
+function selectRoot(note)  { state.root=note; renderAll(); }
+function selectMode(key)   { state.mode=key; closeModeDropdown(); renderAll(); }
+function selectDegree(idx) {
+  state.selectedDegree=idx;
+  renderChordPanel();
+  renderSuggestions();
+  renderScaleRow();
+  // Keyboard needs to update chord highlight
+  if(state.instrument==="keyboard") renderKeyboard();
+}
+function selectInstrument(key) {
+  state.instrument=key;
+  // Set sensible default tuning
+  if(key==="guitar")   state.tuningKey="standard";
+  if(key==="bass")     state.tuningKey="standard4";
+  if(key==="keyboard") state.tuningKey="";
+  renderInstrumentBar();
+  renderTuningBar();
+  renderViz();
+  renderTab();
+}
+function selectTuning(key) {
+  state.tuningKey=key;
+  renderTuningBar();
+  renderViz();
+  renderTab();
+}
+
+function addDegree(idx) {
+  const sc=getScale(state.root,state.mode);
+  const mD=MODES[state.mode];
+  state.progression.push({root:sc[idx],type:mD.chordTypes[idx],func:mD.functions[idx]});
+  renderProgression();
+  renderTab();
+}
+function addSuggestion(sugIdx) {
+  const sug=getSuggestions(state.selectedDegree,state.mode)[sugIdx];
+  addDegree(state.selectedDegree);
+  sug.degrees.forEach(d=>addDegree(d));
+}
+function clearProg() { state.progression=[]; renderProgression(); renderTab(); }
+
+function copyTab() {
+  const text=buildTab();
+  if(!text) return;
+  const mD=MODES[state.mode];
+  const now=new Date().toLocaleDateString("es-AR",{day:"2-digit",month:"2-digit",year:"numeric"});
+  const full=`Compass Composer · ${NOTE_LABELS[NOTES.indexOf(state.root)]} ${mD.label} · ${now}\n\n${text}`;
+  navigator.clipboard.writeText(full).then(()=>{
+    const btn=document.getElementById("btn-copy-tab");
+    if(!btn) return;
+    const orig=btn.innerHTML;
+    btn.classList.add("copied");
+    btn.innerHTML=btn.innerHTML.replace("Copiar TAB","¡Copiado!");
+    setTimeout(()=>{btn.classList.remove("copied");btn.innerHTML=orig;},2000);
+  });
+}
+
+function buildCifradoText() {
+  const mD=MODES[state.mode];
+  const prog=state.progression;
+  if(prog.length===0) return null;
+  const chords=prog.map(ch=>{
+    const name=chordLabel(ch.root,ch.type);
+    const fn=FUNC_LABELS[ch.func].toUpperCase();
+    return `${name} (${fn})`;
+  }).join("  —  ");
+  const scale=getScale(state.root,state.mode);
+  const scaleStr=scale.map((r,i)=>{const t=MODES[state.mode].chordTypes[i];return chordLabel(r,t);}).join(" · ");
+  const now=new Date().toLocaleDateString("es-AR",{day:"2-digit",month:"2-digit",year:"numeric"});
+  return [
+    "╔══════════════════════════════════════════════╗",
+    "   COMPASS COMPOSER · Armonía Ilustrada",
+    "╚══════════════════════════════════════════════╝",
+    "",
+    `Tonalidad : ${NOTE_LABELS[NOTES.indexOf(state.root)]} ${mD.label}`,
+    `Fecha     : ${now}`,
+    "",
+    "── ESCALA ─────────────────────────────────────",
+    scaleStr,
+    "",
+    "── PROGRESIÓN ─────────────────────────────────",
+    chords,
+    "",
+    "── NOTAS POR ACORDE ───────────────────────────",
+    ...prog.map((ch,i)=>{
+      const notes=buildChord(ch.root,ch.type).map(n=>NOTE_LABELS[NOTES.indexOf(n)]).join(" - ");
+      return `  ${i+1}. ${chordLabel(ch.root,ch.type).padEnd(6)} →  ${notes}`;
+    }),
+  ].join("\n");
+}
+
+function copyCifrado() {
+  const text=buildCifradoText();
+  if(!text){alert("Agregá al menos un acorde a la progresión primero.");return;}
+  navigator.clipboard.writeText(text).then(()=>{
+    const btn=document.getElementById("btn-copy");
+    btn.classList.add("copied");
+    btn.innerHTML=btn.innerHTML.replace("Copiar cifrado","¡Copiado!");
+    setTimeout(()=>{btn.classList.remove("copied");btn.innerHTML=btn.innerHTML.replace("¡Copiado!","Copiar cifrado");},2000);
+  });
+}
+
+function exportPDF() {
+  if(state.progression.length===0){alert("Agregá al menos un acorde a la progresión primero.");return;}
+  window.print();
+}
+
+// ── renderAll ─────────────────────────────────────────────────────────────────
+function renderAll() {
+  renderTonicGrid();
+  renderModeDropdown();
+  renderInstrumentBar();
+  renderTuningBar();
+  if(state.instrument !== "keyboard" && !document.getElementById("fretboard")){
+    document.getElementById("viz-area").innerHTML = `<div class="fretboard-wrap"><svg id="fretboard" height="160"></svg></div>`;
+  }
+  renderViz();
+  renderScaleRow();
+  renderChordPanel();
+  renderSuggestions();
+  renderProgression();
+  renderTab();
+}
+
+// ── PWA Install ───────────────────────────────────────────────────────────────
+let deferredPrompt = null;
+
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  deferredPrompt = e;
+  document.getElementById('install-btn').classList.add('visible');
+});
+
+function installApp() {
+  if(!deferredPrompt) return;
+  deferredPrompt.prompt();
+  deferredPrompt.userChoice.then(choice => {
+    if(choice.outcome === 'accepted') {
+      document.getElementById('install-btn').classList.remove('visible');
+    }
+    deferredPrompt = null;
+  });
+}
+
+window.addEventListener('appinstalled', () => {
+  document.getElementById('install-btn').classList.remove('visible');
+  deferredPrompt = null;
+});
+
+document.getElementById("viz-area").innerHTML = `<div class="fretboard-wrap"><svg id="fretboard" height="160"></svg></div>`;
+renderAll();
+</script>
+
+<div style="text-align:center;padding:32px 0 16px;font-size:11px;color:#333;letter-spacing:1px">
+  una idea de <span style="color:#444;font-style:italic">Waviwan</span>
+</div>
+
+
+<script>
+if('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js')
+      .then(r => console.log('SW registrado:', r.scope))
+      .catch(e => console.log('SW error:', e));
+  });
+}
+</script>
+</body>
+</html>

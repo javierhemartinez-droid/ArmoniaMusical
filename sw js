@@ -1,0 +1,49 @@
+const CACHE_NAME = "armonia-compass-v1";
+
+const ASSETS = [
+  "/ArmoniaMusical/",
+  "/ArmoniaMusical/index.html",
+  "/ArmoniaMusical/explorador.html",
+  "/ArmoniaMusical/manifest.json",
+  "/ArmoniaMusical/icons/icon-192.png",
+  "/ArmoniaMusical/icons/icon-512.png",
+  "/ArmoniaMusical/icons/icon-180.png"
+];
+
+// Instalación: Guardar archivos esenciales en caché
+self.addEventListener("install", e => {
+  e.waitUntil(
+    caches.open(CACHE_NAME).then(cache => {
+      console.log("PWA: Cacheando recursos de Armonía Musical");
+      return cache.addAll(ASSETS);
+    })
+  );
+  self.skipWaiting();
+});
+
+// Activación: Limpiar versiones viejas de caché
+self.addEventListener("activate", e => {
+  e.waitUntil(
+    caches.keys().then(keys =>
+      Promise.all(
+        keys.map(key => {
+          if (key !== CACHE_NAME) {
+            console.log("PWA: Eliminando caché antigua", key);
+            return caches.delete(key);
+          }
+        })
+      )
+    )
+  );
+  self.clients.claim();
+});
+
+// Fetch: Responder desde la caché si existe, sino ir a internet
+self.addEventListener("fetch", e => {
+  e.respondWith(
+    caches.match(e.request).then(cachedResponse => {
+      return cachedResponse || fetch(e.request);
+    })
+  );
+});
+

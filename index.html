@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Armonía Musical</title>
+    
+    <link rel="manifest" href="./manifest.json">
+    
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Armonía">
+    <link rel="apple-touch-icon" href="./icon-180.png">
+    
+    <meta name="theme-color" content="#0a0a0d">
+
+    <style>
+        :root {
+            --bg-principal: #0a0a0d;
+            --bg-tarjeta: #13131a;
+            --texto-principal: #f0f0f5;
+            --texto-secundario: #94a3b8;
+            --color-acento: #3b82f6;
+            --color-acento-hover: #2563eb;
+            --borde: #1e293b;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background-color: var(--bg-principal);
+            color: var(--texto-principal);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .contenedor {
+            width: 100%;
+            max-width: 480px;
+            background-color: var(--bg-tarjeta);
+            border: 1px solid var(--borde);
+            border-radius: 24px;
+            padding: 40px 30px;
+            text-align: center;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+        }
+
+        .icono-app {
+            width: 96px;
+            height: 96px;
+            background: linear-gradient(135deg, var(--color-acento), #1d4ed8);
+            border-radius: 22px;
+            margin: 0 auto 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 8px 16px rgba(59, 130, 246, 0.2);
+        }
+
+        .icono-app svg {
+            width: 48px;
+            height: 48px;
+            fill: white;
+        }
+
+        h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 12px;
+            letter-spacing: -0.025em;
+        }
+
+        p {
+            color: var(--texto-secundario);
+            font-size: 1rem;
+            line-height: 1.5;
+            margin-bottom: 32px;
+        }
+
+        .boton-entrar {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            padding: 16px 24px;
+            background-color: var(--color-acento);
+            color: white;
+            border: none;
+            border-radius: 14px;
+            font-size: 1rem;
+            font-weight: 600;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        }
+
+        .boton-entrar:hover {
+            background-color: var(--color-acento-hover);
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
+        }
+
+        .boton-entrar:active {
+            transform: translateY(1px);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="contenedor">
+        <div class="icono-app">
+            <svg viewBox="0 0 24 24">
+                <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/>
+            </svg>
+        </div>
+        
+        <h1>Armonía Musical</h1>
+        <p>Circulo de quintas y armonizador de acordes para ayudarte a componer.</p>
+        
+        <a href="./explorador.html" class="boton-entrar">Abrir Explorador</a>
+    </div>
+
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                // Usamos la ruta relativa para evitar problemas en GitHub Pages
+                navigator.serviceWorker.register('./sw.js')
+                    .then(reg => {
+                        console.log('Service Worker registrado con éxito en el ámbito:', reg.scope);
+                    })
+                    .catch(err => {
+                        console.error('Error al registrar el Service Worker:', err);
+                    });
+            });
+        }
+    </script>
+</body>
+</html>
+
